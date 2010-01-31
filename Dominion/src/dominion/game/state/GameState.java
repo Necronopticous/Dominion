@@ -9,6 +9,7 @@ import java.util.Random;
 
 import dominion.card.Card;
 import dominion.card.type.Type;
+import dominion.card.type.Category;
 import dominion.game.player.Player;
 import dominion.settings.Constants;
 
@@ -108,25 +109,8 @@ public class GameState {
 		return instance;
 	}
 	
-	/**
-	 * Returns a list of all Types of cards that may currently be purchased with @param coins.
-	 */
-	public List<Type> getBuyOptions(int coins) {
-		List<Type> buyOptions = new ArrayList<Type>();
-		for(Type type : supplies.keySet()) {
-			if(type.cost() <= coins && !supplies.get(type).isEmpty()) {
-				buyOptions.add(type);
-			}
-		}
-		return buyOptions;
-	}
-	
 	public Turn getCurrentTurn() {
 		return turns.get(turns.size()-1);
-	}
-	
-	public Player getCurrentPlayer() {
-		return getCurrentTurn().getPlayer();
 	}
 
 	public List<Player> getPlayers() {
@@ -141,8 +125,14 @@ public class GameState {
 		return supplies;
 	}
 	
-	public Pile getTrash() {
-		return trash;
+	public List<Pile> getSupplies(Category category) {
+		List<Pile> supplyCategory = new ArrayList<Pile>();
+		for (Type type : supplies.keySet()) {
+			if (type.category() == category) {
+				supplyCategory.add(supplies.get(type));
+			}
+		}
+		return supplyCategory;
 	}
 	
 	public Random getRandom() {

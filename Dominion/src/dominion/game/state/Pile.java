@@ -14,43 +14,6 @@ public class Pile extends Stack<Card> {
 	private static final long serialVersionUID = 7155923307343748517L;
 	
 	/**
-	 * Returns true if this Pile contains at least one Card with @param type.
-	 */
-	public boolean contains(Type type) {
-		boolean contains = false;
-		for(Card card : this) {
-			if(card.getType() == type) {
-				contains = true;
-				break;
-			}
-		}
-		return contains;
-	}
-	
-	/**
-	 * Returns true if this Pile contains at least one Card with @param category.
-	 */
-	public boolean contains(Category category) {
-		boolean contains = false;
-		for(Card card : this) {
-			if(card.getType().category() == category) {
-				contains = true;
-				break;
-			}
-		}
-		return contains;
-	}
-	
-	/**
-	 * Draw a card from the top of this pile and @return it.
-	 */
-	public Card draw() {
-		Card card = null;
-		if(!this.isEmpty()) card = this.pop();
-		return card;
-	}
-	
-	/**
 	 * Draw a Card from the top of this pile and place it on the top of @param pile.
 	 */
 	public void draw(Pile pile) {
@@ -68,9 +31,6 @@ public class Pile extends Stack<Card> {
 		}
 	}
 	
-	/**
-	 * Draw all Cards in this Pile to @param pile
-	 */
 	public void drawAll(Pile pile) {
 		while(!this.isEmpty()) this.draw(pile);
 	}
@@ -123,18 +83,6 @@ public class Pile extends Stack<Card> {
 		return pile;
 	}
 	
-	/**
-	 * Move @param card from this Pile to @param pile.
-	 */
-	public void move(Card card, Pile pile) {
-		if(this.remove(card)) {
-			pile.push(card);
-		}
-	}
-	
-	/**
-	 * Shuffle this Pile.
-	 */
 	public void shuffle() {
 		Collections.shuffle(this, GameState.getInstance().getRandom());
 	}

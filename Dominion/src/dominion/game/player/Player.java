@@ -1,6 +1,7 @@
 package dominion.game.player;
 
-import dominion.card.Card;
+import java.util.Collections;
+
 import dominion.game.state.Pile;
 
 public class Player {
@@ -9,28 +10,22 @@ public class Player {
 	
 	private Pile deck;
 	private Pile hand;
-	private Pile discardPile; //TODO: Top card in discardPile is visible to all players
-	private Pile playArea; //TODO: All cards in playArea are visible
+	private Pile discardPile;
 	
 	public Player(boolean human) {
 		this.human = human;
 		deck = new Pile();
 		hand = new Pile();
 		discardPile = new Pile();
-		playArea = new Pile();
 	}
 	
 	public void draw(int amount) {
 		for(int i = 0; i < amount; i++) draw();
 	}
 	
-	public Card draw() {
+	public void draw() {
 		if(deck.isEmpty()) shuffle();
-		return deck.draw();
-	}
-	
-	public void draw(Pile pile) {
-		this.draw(pile);
+		deck.draw(hand);
 	}
 	
 	public void shuffle() {
@@ -48,10 +43,6 @@ public class Player {
 
 	public Pile getDiscardPile() {
 		return discardPile;
-	}
-	
-	public Pile getPlayArea() {
-		return playArea;
 	}
 
 	public boolean isHuman() {

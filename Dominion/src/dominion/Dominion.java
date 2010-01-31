@@ -1,10 +1,13 @@
 package dominion;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import dominion.card.Card;
+import dominion.card.type.Category;
 import dominion.card.type.Type;
 import dominion.game.player.Player;
 import dominion.game.state.GameState;
