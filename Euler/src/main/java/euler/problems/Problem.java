@@ -103,4 +103,25 @@ public abstract class Problem {
 		return true;
 	}
 	
+	boolean isTriangleWord(String word) {
+		return isTriangleNumber(getWordValue(word));
+	}
+	
+	int getWordValue(String word) {
+		int wordValue = 0;
+		for(char c : word.toUpperCase().toCharArray()) {
+			wordValue += (byte)c - 64;
+		}
+		return wordValue;
+	}
+
+	boolean isTriangleNumber(int n) {
+		int term = 0;
+		for(int i = 1; term < n; i++) {
+			term = (int)((0.5) * i * (i+1));
+		}
+		if(term == n) return true;
+		return false;
+	}
+	
 }
