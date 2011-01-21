@@ -8,7 +8,7 @@ public class Problem47 extends Problem {
 	@Override
 	int solve() {
 		int last = 0;
-		for(int i = 2; i < 100000; i++) {
+		for(int i = 2; i < 1000000; i++) {
 			int count = 0;
 			for(int prime = 2; prime < i; prime = nextPrime(prime)) {
 				if(i % prime == 0) count++;
