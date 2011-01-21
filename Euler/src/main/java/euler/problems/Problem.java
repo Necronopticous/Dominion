@@ -124,4 +124,60 @@ public abstract class Problem {
 		return false;
 	}
 	
+	long triangle(int n) {
+		return (long)n * ((long)n + 1) / 2;
+	}
+	
+	boolean isTriangle(long n) {
+		for(int i = ((int)Math.sqrt(n*2)-1); triangle(i) <= n; i++) {
+			if(triangle(i) == n) return true;
+		}
+		return false;
+	}
+	
+	long pentagonal(int n) {
+		return (long)n * (3 * (long)n - 1) / 2;
+	}
+	
+	boolean isPentagonal(long n) {
+		for(int i = ((int)Math.sqrt(n*2/3)-1); pentagonal(i) <= n; i++) {
+			if(pentagonal(i) == n) return true;
+		}
+		return false;
+	}
+	
+	long hexagonal(int n) {
+		return (long)n * (2 * (long)n - 1);
+	}
+	
+	boolean isHexagonal(long n) {
+		for(int i = ((int)Math.sqrt(n/2)-1); hexagonal(i) <= n; i++) {
+			if(hexagonal(i) == n) return true;
+		}
+		return false;
+	}
+	
+	boolean isOdd(int n) {
+		return n%2!=0;
+	}
+	
+	boolean isEven(int n) {
+		return n%2==0;
+	}
+	
+	public int nextPrime(int n) {
+		if(n < 2) return 2;
+		n++;
+		while(!isPrime(n)) n++;
+		return n;
+	}
+	
+	public int nextOddComposite(int n) {
+		if(n < 9) return 9;
+		n++;
+		if(isEven(n)) n++;
+		while(isPrime(n)) n+=2;
+		return n;
+	}
+	
 }
