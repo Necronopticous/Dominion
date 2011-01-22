@@ -60,8 +60,7 @@ public abstract class Problem {
 	
 	boolean isPrime(int n) {
 		if(n < 2) return false;
-		double nSquared = Math.sqrt(n);
-		for(int i = 2; i <= nSquared; i++) {
+		for(int i = 2; i*i <= n; i++) {
 			if(n % i == 0) return false;
 		}
 		return true;
