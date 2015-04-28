@@ -3,7 +3,7 @@ package com.necronopticous.splendor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player {
+public abstract class Player {
 	
 	private String name;
 	private boolean human;
@@ -22,6 +22,12 @@ public class Player {
 		this.name = name;
 		this.human = human;
 	}
+	
+	public abstract void takeTurn(Game game);
+	
+	public abstract Color discardToken();
+	
+	public abstract Tile chooseTile(List<Tile> choices);
 
 	public int getPoints() {
 		return points;

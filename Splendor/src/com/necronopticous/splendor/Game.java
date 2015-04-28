@@ -1,6 +1,7 @@
 package com.necronopticous.splendor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +11,10 @@ import java.util.Set;
 public class Game {
 	
 	private Player[] players;
+	/** The player whose turn it is now. */
 	private Player currentPlayer;
+	/** The last player to take an action.  Same as currentPlayer at the end of a turn. */
+	private Player lastPlayer;
 	private int round;
 	private List<Card> l3Deck;
 	private List<Card> l2Deck;
@@ -29,7 +33,7 @@ public class Game {
 		numPlayers = Math.max(numPlayers, 2);
 		numPlayers = Math.min(numPlayers, 4);
 		this.players = new Player[numPlayers];
-		for(int i = 0; i < numPlayers; i++) this.players[i] = new Player("Player " + i, true);
+		for(int i = 0; i < numPlayers; i++) this.players[i] = new HumanPlayer("Player " + i, true);
 		this.currentPlayer = players[0];
 		this.round = 0;
 		
@@ -51,26 +55,13 @@ public class Game {
 	public void play() {
 		while(winners().isEmpty()) {
 			for(Player player : players) {
-				if(player.isHuman()) {
-					draw();
-//					String input = "";
-//					while(!isValid(input)) {
-//					StringBuilder sb = new StringBuilder();
-//					for(int i = 0; i < 5; i++) {
-//						Color color = Color.getByIndex(i);
-//						sb.append(player.getPerm()[i]);
-//						sb.append(color.getSymbol());
-//						sb.append(player.getTemp()[i]);
-//						sb.append(" ");
-//						}
-//						
-//					}
-//					sb.deleteCharAt(sb.length()-1);
-//					System.out.print(sb.toString() + ": ");
-//					input = in.next();
-				} else {
-					// AI
+				currentPlayer = player;
+				player.takeTurn(this);
+				if (currentPlayer != lastPlayer) {
+					System.out.println("Error: " + player.getName() + " didn't do anything!");
 				}
+				checkTokens(player);
+				checkTiles(player);
 			}
 		}
 		for(Player winner : winners()) {
@@ -78,45 +69,126 @@ public class Game {
 		}
 	}
 	
-	private boolean purchase(Card card) {
+	public boolean purchase(Card card) {
+		if (currentPlayer == lastPlayer) {
+			// Can't take two actions in a turn
+			return false;
+		}
 		boolean valid = true;
 		switch(card.getLevel()){
-		case 1: valid = l1Deck.remove(card); break;
-		case 2: valid = l2Deck.remove(card); break;
-		case 3: valid = l3Deck.remove(card); break;
+		case 1: valid = l1Deck.subList(0, Math.min(l1Deck.size(), 4)).remove(card); break;
+		case 2: valid = l2Deck.subList(0, Math.min(l2Deck.size(), 4)).remove(card); break;
+		case 3: valid = l3Deck.subList(0, Math.min(l3Deck.size(), 4)).remove(card); break;
 		}
-		if(!valid) return false;
+		if (!valid) {
+			valid = currentPlayer.getReserve().remove(card);
+		}
+		if (!valid) {
+			// Card is not available for purchase
+			return false;
+		}
+		
+		int[] spend = new int[currentPlayer.getTemp().length];
+		for (int i = 0; i < card.getCost().length; i++) {
+			spend[i] += Math.max(card.getCost()[i] - currentPlayer.getPerm()[i], 0);
+			int deficit = spend[i] - currentPlayer.getTemp()[i];
+			if (deficit > 0) {
+				// Need to use gold to cover the deficit
+				spend[Color.WILD.getIndex()] += deficit;
+				spend[i] -= deficit;
+				if (spend[Color.WILD.getIndex()] > currentPlayer.getTemp()[Color.WILD.getIndex()]) {
+					// Can't afford it
+					return false;
+				}
+			}
+		}
+		for (int i = 0; i < tokens.length; i++) {
+			currentPlayer.getTemp()[i] -= spend[i];
+			tokens[i] += spend[i];
+		}
 		Color color = card.getColor();
-		//currentPlayer.getPerm()[color.getIndex()] = currentPlayer.getPerm()[color.getIndex()] + 1;
 		currentPlayer.getPerm()[color.getIndex()]++;
 		currentPlayer.setPoints(currentPlayer.getPoints() + card.getPoints());
+		lastPlayer = currentPlayer;
 		return true;
 	}
 	
-	private boolean reserve(Card card) {
+	public boolean reserve(Card card) {
+		if (currentPlayer == lastPlayer) {
+			// Can't take two actions in a turn
+			return false;
+		}
 		if(currentPlayer.getReserve().size() >= 3) return false;
 		boolean valid = true;
 		switch(card.getLevel()){
-		case 1: valid = l1Deck.remove(card); break;
-		case 2: valid = l2Deck.remove(card); break;
-		case 3: valid = l3Deck.remove(card); break;
+		case 1: valid = l1Deck.subList(0,Math.min(l1Deck.size(), 5)).remove(card); break;
+		case 2: valid = l2Deck.subList(0,Math.min(l2Deck.size(), 5)).remove(card); break;
+		case 3: valid = l3Deck.subList(0,Math.min(l2Deck.size(), 5)).remove(card); break;
+		}
+		if (!valid) {
+			// Card is not available to be reserved
+			return false;
 		}
 		currentPlayer.getReserve().add(card);
 		if(tokens[Color.WILD.getIndex()] > 0) {
 			tokens[Color.WILD.getIndex()]--;
 			currentPlayer.getTemp()[Color.WILD.getIndex()]++;
 		}
+		lastPlayer = currentPlayer;
 		return true;
 	}
 	
-	private boolean take(Color... colors) {
+	public boolean take(Color... colors) {
+		if (currentPlayer == lastPlayer) {
+			// Can't take two actions in a turn
+			return false;
+		}
 		switch(colors.length) {
 		case 2:
 		case 3:
 		default:
 			
 		}
+		lastPlayer = currentPlayer;
 		return true;
+	}
+	
+	private void checkTokens(Player player) {
+		int sum = 0;
+		for (int i = 0; i < player.getTemp().length; i++) {
+			sum += player.getTemp()[i];
+		}
+		for (int i = 0; i < sum - 10; i++) {
+			Color discard = player.discardToken();
+			if (player.getTemp()[discard.getIndex()] <= 0) {
+				throw new IllegalStateException(player.getName() + " does not have a " + discard.getSymbol() + " to discard.");
+			}
+			player.getTemp()[discard.getIndex()]--;
+			tokens[discard.getIndex()]++;
+		}
+	}
+	
+	private void checkTiles(Player player) {
+		Tile gainedTile;
+		List<Tile> tileChoices = new ArrayList<Tile>();
+		TILE_LOOP:
+		for (Tile tile : tiles) {
+			for (int i = 0; i < tile.getCost().length; i++) {
+				if (tile.getCost()[i] > player.getPerm()[i]) {
+					continue TILE_LOOP;
+				}
+			}
+			tileChoices.add(tile);
+		}
+		if (tileChoices.isEmpty()) {
+			return;
+		} else if (tileChoices.size() > 1) {
+			gainedTile = player.chooseTile(tileChoices);
+		} else {
+			gainedTile = tileChoices.get(0);
+		}
+		tiles.remove(gainedTile);
+		player.setPoints(player.getPoints() + gainedTile.getPoints());
 	}
 	
 	private Set<Player> winners() {
@@ -490,6 +562,38 @@ public class Game {
 		Collections.shuffle(l3Deck);
 		
 		return l3Deck;
+	}
+
+	public Player[] getPlayers() {
+		return Arrays.copyOf(players, players.length);
+	}
+
+	public Player getCurrentPlayer() {
+		return currentPlayer;
+	}
+
+	public int getRound() {
+		return round;
+	}
+
+	public List<Card> getL3Deck() {
+		return Collections.unmodifiableList(l3Deck);
+	}
+
+	public List<Card> getL2Deck() {
+		return Collections.unmodifiableList(l2Deck);
+	}
+
+	public List<Card> getL1Deck() {
+		return Collections.unmodifiableList(l1Deck);
+	}
+
+	public List<Tile> getTiles() {
+		return Collections.unmodifiableList(tiles);
+	}
+
+	public int[] getTokens() {
+		return Arrays.copyOf(tokens, tokens.length);
 	}
 
 }
