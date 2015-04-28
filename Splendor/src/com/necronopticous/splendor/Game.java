@@ -145,9 +145,28 @@ public class Game {
 		}
 		switch(colors.length) {
 		case 2:
+			if (colors[0] != colors[1]) {
+				return false;
+			}
+			if (tokens[colors[0].getIndex()] < 4) {
+				return false;
+			}
+			tokens[colors[0].getIndex()] -= 2;
+			currentPlayer.getTemp()[colors[0].getIndex()] += 2;
+			break;
 		case 3:
+			if (colors[0] == colors[1] || colors[0] == colors[2] || colors[1] == colors[2]) {
+				return false;
+			}
+			for (Color color : colors) {
+				if (tokens[color.getIndex()] > 0) {
+					tokens[color.getIndex()]--;
+					currentPlayer.getTemp()[color.getIndex()]++;
+				}
+			}
+			break;
 		default:
-			
+			return false;
 		}
 		lastPlayer = currentPlayer;
 		return true;
